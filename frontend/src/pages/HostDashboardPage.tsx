@@ -172,13 +172,27 @@ export const HostDashboardPage = () => {
       title: lodging.title || lodging.name || '',
       description: lodging.description || '',
       city: lodging.location?.city || lodging.city || '',
-      country: lodging.location?.country || '',
+      country: (lodging.location as any)?.country || '',
       price: lodging.price.toString(),
       amenities: (lodging.amenities || []).join(', '),
       images: [],
     });
     setEditingId(lodging.id);
     setShowForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setFormData({
+      title: '',
+      description: '',
+      city: '',
+      country: '',
+      price: '',
+      amenities: '',
+      images: [],
+    });
+    setEditingId(null);
+    setShowForm(false);
   };
 
   const handleUpdateBookingStatus = async (bookingId: string, status: string) => {
