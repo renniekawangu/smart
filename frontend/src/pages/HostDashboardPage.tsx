@@ -43,6 +43,7 @@ export const HostDashboardPage = () => {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [imageIndexes, setImageIndexes] = useState<{ [key: string]: number }>({});
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -365,8 +366,34 @@ export const HostDashboardPage = () => {
                       className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                     />
                     {formData.images.length > 0 && (
-                      <div className="mt-2 text-sm text-gray-300">
-                        Selected {formData.images.length} file(s)
+                      <div className="mt-4">
+                        <div className="text-sm text-gray-300 mb-3">
+                          Selected {formData.images.length} image(s) - Max 10 allowed
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {formData.images.map((file, idx) => (
+                            <div key={idx} className="relative group">
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Preview ${idx}`}
+                                className="w-full h-24 object-cover rounded border border-white border-opacity-20"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData({
+                                    ...formData,
+                                    images: formData.images.filter((_, i) => i !== idx)
+                                  });
+                                }}
+                                className="absolute top-0 right-0 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                ✕
+                              </button>
+                              <div className="text-xs text-gray-300 mt-1 truncate">{file.name}</div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -386,18 +413,51 @@ export const HostDashboardPage = () => {
               <div className="text-center text-gray-300 py-8">No lodgings yet. Create your first one!</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {lodgings.map((lodging) => (
+                {lodgings.map((lodging) => {
+                  const currentImageIndex = imageIndexes[lodging.id] || 0;
+                  const images = lodging.images || [];
+                  const currentImage = images[currentImageIndex];
+                  const hasMultipleImages = images.length > 1;
+
+                  return (
                   <div
                     key={lodging.id}
                     className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl border border-white border-opacity-20 overflow-hidden hover:bg-opacity-20 transition-all"
                   >
-                    {lodging.images && lodging.images[0] && (
-                      <img
-                        src={lodging.images[0]}
-                        alt={lodging.title || lodging.name}
-                        className="w-full h-48 object-cover"
-                        crossOrigin="anonymous"
-                      />
+                    {currentImage && (
+                      <div className="relative w-full h-48 bg-gray-900">
+                        <img
+                          src={currentImage}
+                          alt={lodging.title || lodging.name}
+                          className="w-full h-full object-cover"
+                          crossOrigin="anonymous"
+                        />
+                        {hasMultipleImages && (
+                          <>
+                            <button
+                              onClick={() => setImageIndexes({
+                                ...imageIndexes,
+                                [lodging.id]: (currentImageIndex - 1 + images.length) % images.length
+                              })}
+                              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                            >
+                              ◀
+                            </button>
+                            <button
+                              onClick={() => setImageIndexes({
+                                ...imageIndexes,
+                                [lodging.id]: (currentImageIndex + 1) % images.length
+                              })}
+                              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                            >
+                              ▶
+                            </button>
+                            <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                              {currentImageIndex + 1}/{images.length}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     )}
                     <div className="p-4">
                       <h3 className="text-white font-semibold mb-2">{lodging.title || lodging.name}</h3>
@@ -431,7 +491,8 @@ export const HostDashboardPage = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
