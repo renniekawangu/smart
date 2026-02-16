@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { searchService } from '../services/searchService';
-import { sendSuccess, sendError } from '../utils/response';
+import { successResponse, errorResponse } from '../utils/response';
 
 export const searchController = {
   // Advanced search with filters
@@ -17,11 +17,21 @@ export const searchController = {
         numberOfGuests,
       } = req.query;
 
+      // Handle amenities - ensure it's an array of strings
+      let amenitiesArray: string[] = [];
+      if (amenities) {
+        if (Array.isArray(amenities)) {
+          amenitiesArray = amenities.filter(a => typeof a === 'string') as string[];
+        } else if (typeof amenities === 'string') {
+          amenitiesArray = [amenities];
+        }
+      }
+
       const filters = {
         location: location ? String(location) : undefined,
         minPrice: minPrice ? parseFloat(String(minPrice)) : undefined,
         maxPrice: maxPrice ? parseFloat(String(maxPrice)) : undefined,
-        amenities: amenities ? (Array.isArray(amenities) ? amenities : [amenities]) : undefined,
+        amenities: amenitiesArray.length > 0 ? amenitiesArray : undefined,
         minRating: minRating ? parseFloat(String(minRating)) : undefined,
         startDate: startDate ? String(startDate) : undefined,
         endDate: endDate ? String(endDate) : undefined,
@@ -34,10 +44,10 @@ export const searchController = {
       );
 
       const results = await searchService.searchLodgings(filters);
-      return sendSuccess(res, results, 'Search completed');
+      res.status(200).json(successResponse(results, 'Search completed'));
     } catch (error) {
       console.error('Search error:', error);
-      return sendError(res, 'Search failed');
+      res.status(500).json(errorResponse('Search failed'));
     }
   },
 
@@ -48,14 +58,15 @@ export const searchController = {
       const userId = (req as any).userId;
 
       if (!name || !filters) {
-        return sendError(res, 'Name and filters required', 400);
+        res.status(400).json(errorResponse('Name and filters required'));
+        return;
       }
 
       const savedSearch = await searchService.saveSearch(userId, name, filters);
-      return sendSuccess(res, savedSearch, 'Search saved');
+      res.status(201).json(successResponse(savedSearch, 'Search saved'));
     } catch (error) {
       console.error('Save search error:', error);
-      return sendError(res, 'Failed to save search');
+      res.status(500).json(errorResponse('Failed to save search'));
     }
   },
 
@@ -64,10 +75,10 @@ export const searchController = {
     try {
       const userId = (req as any).userId;
       const searches = await searchService.getSavedSearches(userId);
-      return sendSuccess(res, searches, 'Saved searches retrieved');
+      res.status(200).json(successResponse(searches, 'Saved searches retrieved'));
     } catch (error) {
       console.error('Get saved searches error:', error);
-      return sendError(res, 'Failed to get saved searches');
+      res.status(500).json(errorResponse('Failed to get saved searches'));
     }
   },
 
@@ -79,14 +90,15 @@ export const searchController = {
 
       const search = await searchService.getSavedSearchById(searchId);
       if (!search || search.userId !== userId) {
-        return sendError(res, 'Search not found', 404);
+        res.status(404).json(errorResponse('Search not found'));
+        return;
       }
 
       await searchService.deleteSavedSearch(searchId);
-      return sendSuccess(res, {}, 'Search deleted');
+      res.status(200).json(successResponse({}, 'Search deleted'));
     } catch (error) {
       console.error('Delete search error:', error);
-      return sendError(res, 'Failed to delete search');
+      res.status(500).json(errorResponse('Failed to delete search'));
     }
   },
 
@@ -96,12 +108,13 @@ export const searchController = {
       const { searchId } = req.params;
       const search = await searchService.getSavedSearchById(searchId);
       if (!search) {
-        return sendError(res, 'Search not found', 404);
+        res.status(404).json(errorResponse('Search not found'));
+        return;
       }
-      return sendSuccess(res, search, 'Search retrieved');
+      res.status(200).json(successResponse(search, 'Search retrieved'));
     } catch (error) {
       console.error('Get search error:', error);
-      return sendError(res, 'Failed to get search');
+      res.status(500).json(errorResponse('Failed to get search'));
     }
   },
 };

@@ -1,4 +1,4 @@
-import { lodgingService } from './index';
+import { lodgingService, bookingService } from './index';
 import { SavedSearchModel } from '../models/SavedSearch';
 
 export const searchService = {
@@ -13,43 +13,28 @@ export const searchService = {
     endDate?: string;
     numberOfGuests?: number;
   }): Promise<any[]> => {
-    const query: any = {};
+    // Use getAllLodgings from lodgingService with appropriate query
+    const result = await lodgingService.getAllLodgings({
+      city: filters.location,
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+      amenities: filters.amenities,
+      limit: 100,
+    });
 
-    // Location filter
-    if (filters.location && filters.location.trim()) {
-      query.city = { $regex: filters.location, $options: 'i' };
-    }
+    let lodgings = result.lodgings;
 
-    // Price range filter
-    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      query.pricePerNight = {};
-      if (filters.minPrice !== undefined) {
-        query.pricePerNight.$gte = filters.minPrice;
-      }
-      if (filters.maxPrice !== undefined) {
-        query.pricePerNight.$lte = filters.maxPrice;
-      }
-    }
-
-    // Amenities filter - must have all selected amenities
-    if (filters.amenities && filters.amenities.length > 0) {
-      query.amenities = { $all: filters.amenities };
-    }
-
-    // Rating filter
+    // Filter by rating if specified
     if (filters.minRating !== undefined) {
-      query.rating = { $gte: filters.minRating };
+      lodgings = lodgings.filter(l => (l.rating || 0) >= filters.minRating!);
     }
-
-    // Get all matching lodgings
-    const lodgings = await lodgingService.searchLodgings(query);
 
     // Filter by availability if dates provided
     if (filters.startDate && filters.endDate) {
       const availableLodgings = [];
       for (const lodging of lodgings) {
-        const available = await lodgingService.checkAvailability(
-          lodging.id || lodging._id,
+        const available = await bookingService.checkAvailability(
+          String(lodging.id),
           filters.startDate,
           filters.endDate
         );
