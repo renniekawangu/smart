@@ -1,7 +1,6 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import path from 'path';
 import 'dotenv/config';
 
 import { connectDB } from './config/database';
@@ -15,7 +14,6 @@ import { errorHandler } from './middleware/auth';
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
-const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${PORT}`;
 
 // Middleware
 app.use(helmet());
@@ -45,9 +43,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);

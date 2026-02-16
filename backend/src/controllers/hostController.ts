@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { lodgingService, bookingService } from '../services/index';
 import { successResponse, errorResponse } from '../utils/response';
+import { fileToBase64 } from '../utils/upload';
 import { AuthenticatedRequest } from '../middleware/auth';
 
 export const hostController = {
@@ -34,19 +35,11 @@ export const hostController = {
         return;
       }
 
-      // Convert file paths to full URLs (support both Cloudinary and local)
-      const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
-      const imageUrls = files.map(file => {
-        // Cloudinary files have a 'path' property with full URL
-        if ((file as any).path) {
-          return (file as any).path;
-        }
-        // Local files use relative path
-        return `${apiBaseUrl}/uploads/${file.filename}`;
-      });
+      // Convert uploaded files to Base64 data URLs
+      const imageUrls = files.map(file => fileToBase64(file));
 
-      console.log('Uploaded files:', files.map(f => f.filename));
-      console.log('Image URLs:', imageUrls);
+      console.log('Uploaded files:', files.length, 'files');
+      console.log('Image data URLs created');
 
       // Parse amenities from JSON string if provided
       let amenitiesArray = [];
@@ -107,16 +100,8 @@ export const hostController = {
       const { title, description, city, country, price, amenities } = req.body;
       const files = (req as any).files as Express.Multer.File[] || [];
 
-      // Convert file paths to URLs with absolute URLs (support both Cloudinary and local)
-      const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
-      const newImageUrls = files.map(file => {
-        // Cloudinary files have a 'path' property with full URL
-        if ((file as any).path) {
-          return (file as any).path;
-        }
-        // Local files use relative path
-        return `${apiBaseUrl}/uploads/${file.filename}`;
-      });
+      // Convert uploaded files to Base64 data URLs
+      const newImageUrls = files.map(file => fileToBase64(file));
       
       // Combine new images with existing ones (if not replacing)
       const existingImages = lodging.images || [];
