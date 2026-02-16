@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { favoriteService } from '../services/favoriteService';
 import { lodgingService } from '../services/index';
 import { successResponse, errorResponse } from '../utils/response';
@@ -117,7 +117,7 @@ export const favoriteController = {
   },
 
   // Get favorite count for a lodging
-  getFavoriteCount: async (req: Response): Promise<void> => {
+  getFavoriteCount: async (req: Request, res: Response): Promise<void> => {
     try {
       const { lodgingId } = req.params;
 

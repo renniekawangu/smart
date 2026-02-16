@@ -42,6 +42,8 @@ export const bookingController = {
         numberOfGuests,
         totalPrice,
         status: BookingStatus.PENDING,
+        paymentMethod: 'cash',
+        paymentStatus: 'pending',
       });
 
       // Send emails asynchronously (don't wait for completion)
