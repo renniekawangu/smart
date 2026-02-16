@@ -471,39 +471,39 @@ export const HostDashboardPage = () => {
                         <td className="px-6 py-4">
                           <span
                             className={`px-3 py-1 rounded text-sm font-semibold ${
-                              booking.status === 'CONFIRMED'
+                              booking.status === 'confirmed'
                                 ? 'bg-green-500 bg-opacity-20 text-green-300 border border-green-400'
-                                : booking.status === 'PENDING'
+                                : booking.status === 'pending'
                                 ? 'bg-yellow-500 bg-opacity-20 text-yellow-300 border border-yellow-400'
                                 : 'bg-red-500 bg-opacity-20 text-red-300 border border-red-400'
                             }`}
                           >
-                            {booking.status || 'UNKNOWN'}
+                            {booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'UNKNOWN'}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex gap-2 flex-wrap">
-                            {booking.status === 'PENDING' && (
+                            {booking.status === 'pending' && (
                               <>
                                 <button
-                                  onClick={() => handleUpdateBookingStatus(booking.id, 'CONFIRMED')}
+                                  onClick={() => handleUpdateBookingStatus(booking.id, 'confirmed')}
                                   className="px-3 py-1 bg-green-500 bg-opacity-20 text-green-300 hover:bg-opacity-40 rounded text-sm border border-green-400 transition-all whitespace-nowrap"
                                 >
                                   Confirm
                                 </button>
                                 <button
-                                  onClick={() => handleUpdateBookingStatus(booking.id, 'CANCELLED')}
+                                  onClick={() => handleUpdateBookingStatus(booking.id, 'cancelled')}
                                   className="px-3 py-1 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-40 rounded text-sm border border-red-400 transition-all whitespace-nowrap"
                                 >
                                   Reject
                                 </button>
                               </>
                             )}
-                            {booking.status === 'CONFIRMED' && (
+                            {booking.status === 'confirmed' && (
                               <button
                                 onClick={() => {
                                   if (confirm('Are you sure you want to cancel this booking?')) {
-                                    handleUpdateBookingStatus(booking.id, 'CANCELLED');
+                                    handleUpdateBookingStatus(booking.id, 'cancelled');
                                   }
                                 }}
                                 className="px-3 py-1 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-40 rounded text-sm border border-red-400 transition-all whitespace-nowrap"
@@ -511,7 +511,7 @@ export const HostDashboardPage = () => {
                                 Cancel
                               </button>
                             )}
-                            {booking.status === 'CANCELLED' && (
+                            {booking.status === 'cancelled' && (
                               <span className="text-gray-400 text-sm">No actions</span>
                             )}
                             {!booking.status && (

@@ -188,7 +188,7 @@ export const hostController = {
       const { bookingId } = req.params;
       const { status } = req.body;
 
-      if (!['PENDING', 'CONFIRMED', 'CANCELLED'].includes(status)) {
+      if (!['pending', 'confirmed', 'cancelled', 'completed'].includes(status)) {
         res.status(400).json(errorResponse('Invalid status'));
         return;
       }
