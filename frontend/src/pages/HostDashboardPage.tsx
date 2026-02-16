@@ -457,7 +457,7 @@ export const HostDashboardPage = () => {
                 <tbody>
                   {bookings.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-300">
+                      <td colSpan={6} className="px-6 py-8 text-center text-gray-300">
                         No bookings yet
                       </td>
                     </tr>
@@ -478,22 +478,22 @@ export const HostDashboardPage = () => {
                                 : 'bg-red-500 bg-opacity-20 text-red-300 border border-red-400'
                             }`}
                           >
-                            {booking.status}
+                            {booking.status || 'UNKNOWN'}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             {booking.status === 'PENDING' && (
                               <>
                                 <button
                                   onClick={() => handleUpdateBookingStatus(booking.id, 'CONFIRMED')}
-                                  className="px-3 py-1 bg-green-500 bg-opacity-20 text-green-300 hover:bg-opacity-40 rounded text-sm border border-green-400 transition-all"
+                                  className="px-3 py-1 bg-green-500 bg-opacity-20 text-green-300 hover:bg-opacity-40 rounded text-sm border border-green-400 transition-all whitespace-nowrap"
                                 >
                                   Confirm
                                 </button>
                                 <button
                                   onClick={() => handleUpdateBookingStatus(booking.id, 'CANCELLED')}
-                                  className="px-3 py-1 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-40 rounded text-sm border border-red-400 transition-all"
+                                  className="px-3 py-1 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-40 rounded text-sm border border-red-400 transition-all whitespace-nowrap"
                                 >
                                   Reject
                                 </button>
@@ -506,13 +506,16 @@ export const HostDashboardPage = () => {
                                     handleUpdateBookingStatus(booking.id, 'CANCELLED');
                                   }
                                 }}
-                                className="px-3 py-1 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-40 rounded text-sm border border-red-400 transition-all"
+                                className="px-3 py-1 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-40 rounded text-sm border border-red-400 transition-all whitespace-nowrap"
                               >
                                 Cancel
                               </button>
                             )}
                             {booking.status === 'CANCELLED' && (
                               <span className="text-gray-400 text-sm">No actions</span>
+                            )}
+                            {!booking.status && (
+                              <span className="text-blue-400 text-sm">Status missing</span>
                             )}
                           </div>
                         </td>
