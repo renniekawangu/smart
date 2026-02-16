@@ -87,6 +87,11 @@ export const hostService = {
     return response.data.data;
   },
 
+  updateBookingStatus: async (bookingId: string, status: string) => {
+    const response = await api.put(`/host/bookings/${bookingId}/status`, { status });
+    return response.data.data;
+  },
+
   getStats: async () => {
     const response = await api.get('/host/stats');
     return response.data.data;

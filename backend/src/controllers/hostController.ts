@@ -178,6 +178,43 @@ export const hostController = {
     }
   },
 
+  updateBookingStatus: async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      if (!req.userId) {
+        res.status(401).json(errorResponse('Not authenticated'));
+        return;
+      }
+
+      const { bookingId } = req.params;
+      const { status } = req.body;
+
+      if (!['PENDING', 'CONFIRMED', 'CANCELLED'].includes(status)) {
+        res.status(400).json(errorResponse('Invalid status'));
+        return;
+      }
+
+      const booking = await bookingService.getBookingById(bookingId);
+
+      if (!booking) {
+        res.status(404).json(errorResponse('Booking not found'));
+        return;
+      }
+
+      // Verify host ownership by checking if booking is for this host's lodging
+      const lodging = await lodgingService.getLodgingById(booking.lodgingId);
+      if (!lodging || lodging.hostId !== req.userId) {
+        res.status(403).json(errorResponse('You can only manage bookings for your lodgings'));
+        return;
+      }
+
+      const updated = await bookingService.updateBookingStatus(bookingId, status);
+      res.json(successResponse(updated));
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      res.status(500).json(errorResponse('Failed to update booking status'));
+    }
+  },
+
   // Dashboard Stats
   getStats: async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {

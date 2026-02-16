@@ -16,6 +16,7 @@ router.delete('/lodgings/:lodgingId', hostController.deleteLodging);
 
 // Booking Management
 router.get('/bookings', hostController.getMyBookings);
+router.put('/bookings/:bookingId/status', hostController.updateBookingStatus);
 
 // Stats
 router.get('/stats', hostController.getStats);

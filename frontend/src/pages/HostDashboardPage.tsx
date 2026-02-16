@@ -181,18 +181,15 @@ export const HostDashboardPage = () => {
     setShowForm(true);
   };
 
-  const handleCancelEdit = () => {
-    setFormData({
-      title: '',
-      description: '',
-      city: '',
-      country: '',
-      price: '',
-      amenities: '',
-      images: [],
-    });
-    setEditingId(null);
-    setShowForm(false);
+  const handleUpdateBookingStatus = async (bookingId: string, status: string) => {
+    try {
+      await hostService.updateBookingStatus(bookingId, status);
+      fetchBookings();
+      fetchStats();
+    } catch (error) {
+      console.error('Failed to update booking status:', error);
+      alert('Failed to update booking');
+    }
   };
 
   return (
@@ -440,6 +437,7 @@ export const HostDashboardPage = () => {
                     <th className="px-6 py-4 text-left text-gray-300">Guests</th>
                     <th className="px-6 py-4 text-left text-gray-300">Total (K)</th>
                     <th className="px-6 py-4 text-left text-gray-300">Status</th>
+                    <th className="px-6 py-4 text-left text-gray-300">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -468,6 +466,41 @@ export const HostDashboardPage = () => {
                           >
                             {booking.status}
                           </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            {booking.status === 'PENDING' && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateBookingStatus(booking.id, 'CONFIRMED')}
+                                  className="px-3 py-1 bg-green-500 bg-opacity-20 text-green-300 hover:bg-opacity-40 rounded text-sm border border-green-400 transition-all"
+                                >
+                                  Confirm
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateBookingStatus(booking.id, 'CANCELLED')}
+                                  className="px-3 py-1 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-40 rounded text-sm border border-red-400 transition-all"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                            {booking.status === 'CONFIRMED' && (
+                              <button
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to cancel this booking?')) {
+                                    handleUpdateBookingStatus(booking.id, 'CANCELLED');
+                                  }
+                                }}
+                                className="px-3 py-1 bg-red-500 bg-opacity-20 text-red-300 hover:bg-opacity-40 rounded text-sm border border-red-400 transition-all"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            {booking.status === 'CANCELLED' && (
+                              <span className="text-gray-400 text-sm">No actions</span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
