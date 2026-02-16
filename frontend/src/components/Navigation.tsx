@@ -97,7 +97,7 @@ export const Navigation: React.FC = () => {
                   onClick={() => handleNavClick("/favorites")}
                   className="block w-full text-left text-white hover:text-blue-200 transition-colors py-2 px-4 rounded hover:bg-white hover:bg-opacity-10"
                 >
-                  ❤️ Favorites
+                  Favorites
                 </button>
                 </button>
                 {user?.role === 'admin' && (

@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { useLodgings } from '../hooks/useLodging';
 import { LodgingCard } from '../components/LodgingCard';
+import { AdvancedFilters } from '../components/AdvancedFilters';
+import { SavedSearches } from '../components/SavedSearches';
+import { searchService } from '../services/searchService';
 import { Lodging } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 export const SearchPage: React.FC = () => {
+  const { user } = useAuth();
   const [filters, setFilters] = useState({
     city: '',
     minPrice: 0,
@@ -12,9 +17,51 @@ export const SearchPage: React.FC = () => {
     amenities: [] as string[],
     limit: 20,
   });
+  const [searchResults, setSearchResults] = useState<Lodging[]>([]);
+  const [manualSearch, setManualSearch] = useState(false);
+  const [saveSearchOpen, setSaveSearchOpen] = useState(false);
+  const [searchName, setSearchName] = useState('');
 
   const { data: result, isLoading, error } = useLodgings(filters);
   const navigate = useNavigate();
+
+  const handleApplyFilters = async (newFilters: any) => {
+    try {
+      const results = await searchService.searchLodgings(newFilters);
+      setSearchResults(results);
+      setManualSearch(true);
+    } catch (error) {
+      console.error('Search error:', error);
+      alert('Search failed');
+    }
+  };
+
+  const handleSaveSearch = async () => {
+    if (!searchName.trim()) {
+      alert('Please enter a search name');
+      return;
+    }
+
+    try {
+      await searchService.saveSearch(searchName, filters);
+      alert('Search saved successfully!');
+      setSearchName('');
+      setSaveSearchOpen(false);
+    } catch (error) {
+      console.error('Failed to save search:', error);
+      alert('Failed to save search');
+    }
+  };
+
+  const handleLoadSearch = (loadedFilters: any) => {
+    setFilters(prev => ({
+      ...prev,
+      ...loadedFilters,
+    }));
+    handleApplyFilters(loadedFilters);
+  };
+
+  const displayResults = manualSearch ? searchResults : result?.lodgings || [];
 
   const handleLodgingSelect = (lodging: Lodging) => {
     navigate(`/lodgings/${lodging.id}`);
@@ -26,8 +73,62 @@ export const SearchPage: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-8 text-white">Find Your Perfect Stay</h1>
 
-          {/* Filters */}
-          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-lg border border-white border-opacity-20 p-6 mb-8">
+          {/* Saved Searches */}
+          {user && (
+            <SavedSearches
+              onLoadSearch={handleLoadSearch}
+              onSearchApplied={() => window.scrollTo({ top: 400, behavior: 'smooth' })}
+            />
+          )}
+
+          {/* Advanced Filters */}
+          <AdvancedFilters
+            onApplyFilters={handleApplyFilters}
+            isLoading={isLoading}
+          />
+
+          {/* Save Current Search */}
+          {user && manualSearch && (
+            <div className="bg-blue-600 rounded-lg p-4 mb-6 flex items-center justify-between">
+              <span className="text-white font-medium">Want to save this search?</span>
+              <button
+                onClick={() => setSaveSearchOpen(!saveSearchOpen)}
+                className="bg-white text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50"
+              >
+                Save Search
+              </button>
+            </div>
+          )}
+
+          {/* Save Search Form */}
+          {saveSearchOpen && (
+            <div className="bg-white rounded-lg p-4 mb-6 shadow-lg">
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder="Search name (e.g., Beach Vacation)"
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleSaveSearch}
+                  className="bg-green-600 text-white px-6 py-2 rounded-md font-medium hover:bg-green-700"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => { setSaveSearchOpen(false); setSearchName(''); }}
+                  className="bg-gray-400 text-white px-6 py-2 rounded-md font-medium hover:bg-gray-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Old filters - hidden by default */}
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-lg border border-white border-opacity-20 p-6 mb-8 hidden">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1 text-white">City</label>
@@ -74,11 +175,18 @@ export const SearchPage: React.FC = () => {
           <div className="text-center py-12 text-red-300">
             <p>Error loading lodgings</p>
           </div>
+        ) : displayResults && displayResults.length > 0 ? (
+          <>
+            <p className="text-white mb-6">Found {displayResults.length} results</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayResults.map((lodging, index) => (
+                <LodgingCard key={lodging.id || `lodging-${index}`} lodging={lodging} onSelect={handleLodgingSelect} />
+              ))}
+            </div>
+          </>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {result?.lodgings?.map((lodging, index) => (
-              <LodgingCard key={lodging.id || `lodging-${index}`} lodging={lodging} onSelect={handleLodgingSelect} />
-            ))}
+          <div className="text-center py-12">
+            <p className="text-white text-opacity-90">No lodgings found. Try adjusting your filters.</p>
           </div>
         )}
         </div>

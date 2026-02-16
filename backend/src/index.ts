@@ -15,6 +15,7 @@ import paymentRoutes from './routes/payments';
 import favoriteRoutes from './routes/favorites';
 import availabilityRoutes from './routes/availability';
 import { pricingRoutes } from './routes/pricing';
+import { searchRoutes } from './routes/search';
 import { errorHandler } from './middleware/auth';
 
 const app: Application = express();
@@ -60,6 +61,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/pricing', pricingRoutes);
+app.use('/api/search', searchRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
