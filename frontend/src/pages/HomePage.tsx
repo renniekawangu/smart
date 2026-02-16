@@ -11,7 +11,7 @@ export const HomePage: React.FC = () => {
       <div className="min-h-screen bg-black bg-opacity-50 flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center text-white w-full">
         <h1 className="text-5xl font-bold mb-4">Smart Lodging</h1>
-        <p className="text-2xl mb-8">Find Your Perfect Stay with AI-Powered Recommendations</p>
+        <p className="text-2xl mb-8">Intelligent Lodging and Booking System</p>
         <div className="space-x-4">
           <button
             onClick={() => navigate(isAuthenticated ? '/search' : '/login')}
