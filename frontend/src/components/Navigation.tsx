@@ -33,6 +33,7 @@ export const Navigation: React.FC = () => {
               <>
                 <a href="/search" className="text-white hover:text-blue-200 transition-colors">Search</a>
                 <a href="/bookings" className="text-white hover:text-blue-200 transition-colors">My Bookings</a>
+                <a href="/favorites" className="text-white hover:text-blue-200 transition-colors">❤️ Favorites</a>
                 {user?.role === 'admin' && (
                   <a href="/admin" className="text-blue-300 hover:text-blue-100 transition-colors font-semibold">
                     Admin
@@ -92,6 +93,12 @@ export const Navigation: React.FC = () => {
                   className="block w-full text-left text-white hover:text-blue-200 transition-colors py-2 px-4 rounded hover:bg-white hover:bg-opacity-10"
                 >
                   My Bookings
+                <button
+                  onClick={() => handleNavClick("/favorites")}
+                  className="block w-full text-left text-white hover:text-blue-200 transition-colors py-2 px-4 rounded hover:bg-white hover:bg-opacity-10"
+                >
+                  ❤️ Favorites
+                </button>
                 </button>
                 {user?.role === 'admin' && (
                   <button

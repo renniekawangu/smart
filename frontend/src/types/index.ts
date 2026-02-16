@@ -65,11 +65,16 @@ export interface Booking {
   id: string;
   userId: string;
   lodgingId: string;
+  hostId?: string;
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
   totalPrice: number;
   status: BookingStatus;
+  paymentMethod?: 'cash' | 'card';
+  paymentStatus?: 'pending' | 'paid' | 'refunded';
+  paymentDate?: Date | null;
+  notes?: string;
   createdAt: string;
 }
 

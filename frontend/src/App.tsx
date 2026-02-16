@@ -9,6 +9,7 @@ import { BookingsPage } from './pages/BookingsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { HostDashboardPage } from './pages/HostDashboardPage'
+import { FavoritesPage } from './pages/FavoritesPage'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/host" element={<HostDashboardPage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/lodgings/:id" element={<LodgingDetailPage />} />
         <Route path="/bookings" element={<BookingsPage />} />

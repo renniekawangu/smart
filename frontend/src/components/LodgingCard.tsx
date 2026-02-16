@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Lodging } from '../types';
+import { favoriteService } from '../services/favoriteService';
+import { useAuth } from '../hooks/useAuth';
 
 interface LodgingCardProps {
   lodging: Lodging;
@@ -7,8 +9,38 @@ interface LodgingCardProps {
 }
 
 export const LodgingCard: React.FC<LodgingCardProps> = ({ lodging, onSelect }) => {
+  const { isAuthenticated } = useAuth();
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      alert('Please login to add favorites');
+      return;
+    }
+
+    try {
+      if (isFavorited) {
+        await favoriteService.removeFavorite(lodging.id);
+      } else {
+        await favoriteService.addFavorite(lodging.id);
+      }
+      setIsFavorited(!isFavorited);
+    } catch (error) {
+      console.error('Failed to update favorite:', error);
+    }
+  };
+
   return (
-    <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-lg border border-white border-opacity-20 overflow-hidden hover:border-opacity-40 transition p-4 cursor-pointer" onClick={() => onSelect(lodging)}>
+    <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-lg border border-white border-opacity-20 overflow-hidden hover:border-opacity-40 transition p-4 cursor-pointer relative" onClick={() => onSelect(lodging)}>
+      <button
+        onClick={handleFavoriteClick}
+        className={`absolute top-3 right-3 z-10 text-2xl transition-all ${
+          isFavorited ? 'text-red-500' : 'text-white text-opacity-50 hover:text-opacity-100'
+        }`}
+      >
+        ♥
+      </button>
       <div className="mb-3 bg-white bg-opacity-10 rounded h-40 flex items-center justify-center overflow-hidden">
         {lodging.images && lodging.images.length > 0 ? (
           <img 
