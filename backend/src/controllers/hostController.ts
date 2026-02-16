@@ -34,8 +34,12 @@ export const hostController = {
         return;
       }
 
-      // Convert file paths to URLs (relative to /uploads)
-      const imageUrls = files.map(file => `/uploads/${file.filename}`);
+      // Convert file paths to full URLs
+      const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
+      const imageUrls = files.map(file => `${apiBaseUrl}/uploads/${file.filename}`);
+
+      console.log('Uploaded files:', files.map(f => f.filename));
+      console.log('Image URLs:', imageUrls);
 
       // Parse amenities from JSON string if provided
       let amenitiesArray = [];
@@ -96,8 +100,9 @@ export const hostController = {
       const { title, description, city, country, price, amenities } = req.body;
       const files = (req as any).files as Express.Multer.File[] || [];
 
-      // Convert file paths to URLs
-      const newImageUrls = files.map(file => `/uploads/${file.filename}`);
+      // Convert file paths to URLs with absolute URLs
+      const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
+      const newImageUrls = files.map(file => `${apiBaseUrl}/uploads/${file.filename}`);
       
       // Combine new images with existing ones (if not replacing)
       const existingImages = lodging.images || [];

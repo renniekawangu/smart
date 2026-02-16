@@ -15,6 +15,7 @@ import { errorHandler } from './middleware/auth';
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
+const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${PORT}`;
 
 // Middleware
 app.use(helmet());
