@@ -77,36 +77,36 @@ export const SavedSearches: React.FC<SavedSearchesProps> = ({ onLoadSearch, onSe
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+    <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-lg border border-white border-opacity-20 overflow-hidden mb-6">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-6 py-4 flex justify-between items-center hover:bg-gray-50 transition-colors"
+        className="w-full px-6 py-4 flex justify-between items-center hover:bg-white hover:bg-opacity-5 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold text-gray-800">Saved Searches</span>
+          <span className="text-lg font-semibold text-white">Saved Searches</span>
           {searches.length > 0 && (
             <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-1">
               {searches.length}
             </span>
           )}
         </div>
-        <span className={`text-2xl transition-transform ${expanded ? 'rotate-180' : ''}`}>▼</span>
+        <span className={`text-2xl transition-transform text-white ${expanded ? 'rotate-180' : ''}`}>▼</span>
       </button>
 
       {expanded && (
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 space-y-3">
+        <div className="px-6 py-4 border-t border-white border-opacity-20 bg-black bg-opacity-20 space-y-3">
           {searches.map(search => (
             <div
               key={search._id}
-              className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-md hover:border-blue-400 transition-colors"
+              className="flex items-center justify-between p-3 bg-white bg-opacity-5 border border-white border-opacity-20 rounded-md hover:border-blue-400 hover:bg-opacity-10 transition-colors"
             >
               <div className="flex-1 cursor-pointer" onClick={() => handleLoadSearch(search)}>
-                <p className="font-medium text-gray-800">{search.name}</p>
-                <p className="text-sm text-gray-600">{getSummary(search)}</p>
+                <p className="font-medium text-white">{search.name}</p>
+                <p className="text-sm text-gray-300">{getSummary(search)}</p>
               </div>
               <button
                 onClick={() => handleDeleteSearch(search._id)}
-                className="ml-3 text-red-600 hover:text-red-700 text-sm font-medium"
+                className="ml-3 text-red-400 hover:text-red-300 text-sm font-medium"
               >
                 Delete
               </button>
@@ -116,7 +116,7 @@ export const SavedSearches: React.FC<SavedSearchesProps> = ({ onLoadSearch, onSe
           {searches.length > 0 && (
             <button
               onClick={() => setShowNewSearch(!showNewSearch)}
-              className="w-full py-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
+              className="w-full py-2 text-blue-400 hover:text-blue-300 font-medium text-sm"
             >
               {showNewSearch ? 'Cancel' : 'Save New Search'}
             </button>
