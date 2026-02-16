@@ -1,6 +1,7 @@
 import { Response } from 'express';
-import { bookingService } from '../services/index';
+import { bookingService, userService, lodgingService } from '../services/index';
 import { successResponse, errorResponse } from '../utils/response';
+import { emailService } from '../utils/email';
 import { AuthenticatedRequest } from '../middleware/auth';
 
 export const paymentController = {
@@ -39,6 +40,21 @@ export const paymentController = {
         paymentMethod: 'cash',
         notes: notes || '',
       });
+
+      // Send payment notification email asynchronously
+      const host = await userService.getUserById(req.userId);
+      const guest = await userService.getUserById(booking.userId);
+      const lodging = await lodgingService.getLodgingById(booking.lodgingId);
+
+      if (host && guest && lodging) {
+        emailService.sendPaymentNotification(
+          host.email,
+          host.name,
+          guest.name,
+          booking.totalPrice,
+          lodging.title || lodging.name
+        );
+      }
 
       res.json(successResponse({
         message: 'Payment recorded successfully',

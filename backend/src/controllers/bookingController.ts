@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { bookingService } from '../services/index';
+import { bookingService, userService, lodgingService } from '../services/index';
 import { successResponse, errorResponse } from '../utils/response';
+import { emailService } from '../utils/email';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { BookingStatus } from '../types/index';
 
@@ -21,7 +22,6 @@ export const bookingController = {
       }
 
       // Get lodging to find hostId
-      const { lodgingService } = await import('../services/index');
       const lodging = await lodgingService.getLodgingById(lodgingId);
       if (!lodging) {
         res.status(404).json(errorResponse('Lodging not found'));
@@ -43,6 +43,36 @@ export const bookingController = {
         totalPrice,
         status: BookingStatus.PENDING,
       });
+
+      // Send emails asynchronously (don't wait for completion)
+      if (req.userId) {
+        const guest = await userService.getUserById(req.userId);
+        const host = await userService.getUserById(lodging.hostId);
+        
+        if (guest) {
+          emailService.sendBookingConfirmation(
+            guest.email,
+            guest.name,
+            lodging.title || lodging.name,
+            checkInDate,
+            checkOutDate,
+            totalPrice
+          );
+        }
+
+        if (host) {
+          emailService.sendHostBookingNotification(
+            host.email,
+            host.name,
+            guest?.name || 'Guest',
+            lodging.title || lodging.name,
+            checkInDate,
+            checkOutDate,
+            numberOfGuests,
+            totalPrice
+          );
+        }
+      }
 
       res.status(201).json(successResponse(booking));
     } catch (error) {

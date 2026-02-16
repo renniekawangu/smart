@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import 'dotenv/config';
 
 import { connectDB } from './config/database';
+import { emailService } from './utils/email';
 import authRoutes from './routes/auth';
 import lodgingRoutes from './routes/lodgings';
 import bookingRoutes from './routes/bookings';
@@ -67,6 +68,9 @@ const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDB();
+
+    // Test email service
+    await emailService.testConnection();
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
