@@ -1,0 +1,76 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: smart-lodging-db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: smart_lodging
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smart-lodging-backend
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      NODE_ENV: development
+      JWT_SECRET: ${JWT_SECRET:-your_super_secret_jwt_key}
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/smart_lodging?authSource=admin
+      ML_SERVICE_URL: http://ml-service:8000/api
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run dev
+
+  # ML Service
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: smart-lodging-ml
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      ENV: development
+    volumes:
+      - ./ml-service/src:/app/src
+    command: python -m src.main
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smart-lodging-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - ml-service
+    volumes:
+      - ./frontend/src:/app/src
+    command: npm run dev
+
+volumes:
+  mongodb_data:
+
+networks:
+  default:
+    name: smart-lodging-network
