@@ -26,6 +26,12 @@ interface Booking {
   totalPrice: number;
   numberOfGuests: number;
   status: string;
+  paymentStatus?: 'pending' | 'paid' | 'refunded';
+  paymentMethod?: 'cash' | 'card';
+  hostId?: string;
+  userId?: string;
+  paymentDate?: Date | null;
+  notes?: string;
 }
 
 interface Stats {
