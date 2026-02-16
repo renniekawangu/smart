@@ -132,6 +132,11 @@ export const bookingService = {
     return booking ? (booking.toObject({ virtuals: true }) as Booking) : null;
   },
 
+  updateBooking: async (id: string, updates: Partial<Booking>): Promise<Booking | null> => {
+    const booking = await BookingModel.findByIdAndUpdate(id, updates, { new: true });
+    return booking ? (booking.toObject({ virtuals: true }) as Booking) : null;
+  },
+
   checkAvailability: async (lodgingId: string, checkIn: string, checkOut: string): Promise<boolean> => {
     const bookingConflicts = await BookingModel.countDocuments({
       lodgingId,

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { hostService } from '../services/dashboardService';
+import { paymentService } from '../services/paymentService';
 
 interface Lodging {
   id: string;
@@ -36,8 +37,10 @@ interface Stats {
 export const HostDashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'lodgings' | 'bookings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'lodgings' | 'bookings' | 'payments'>('overview');
   const [stats, setStats] = useState<Stats | null>(null);
+  const [paymentSummary, setPaymentSummary] = useState<any | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [lodgings, setLodgings] = useState<Lodging[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
@@ -71,6 +74,8 @@ export const HostDashboardPage = () => {
       fetchLodgings();
     } else if (activeTab === 'bookings') {
       fetchBookings();
+    } else if (activeTab === 'payments') {
+      fetchPayments();
     }
   }, [activeTab]);
 
@@ -107,6 +112,34 @@ export const HostDashboardPage = () => {
       console.error('Failed to fetch bookings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPayments = async () => {
+    try {
+      setLoading(true);
+      const [summary, history] = await Promise.all([
+        paymentService.getPaymentSummary(),
+        paymentService.getPaymentHistory(),
+      ]);
+      setPaymentSummary(summary);
+      setPaymentHistory(history);
+    } catch (error) {
+      console.error('Failed to fetch payments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRecordPayment = async (bookingId: string, notes?: string) => {
+    try {
+      await paymentService.recordCashPayment(bookingId, notes);
+      alert('Payment recorded successfully');
+      fetchPayments();
+      fetchBookings();
+    } catch (error) {
+      console.error('Failed to record payment:', error);
+      alert('Failed to record payment');
     }
   };
 
@@ -214,7 +247,7 @@ export const HostDashboardPage = () => {
           <h1 className="text-4xl font-bold text-white mb-8">Host Dashboard</h1>
 
         {/* Tab Navigation */}
-        <div className="flex gap-4 mb-8 border-b border-white border-opacity-20">
+        <div className="flex gap-4 mb-8 border-b border-white border-opacity-20 flex-wrap">
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-6 py-3 font-semibold transition-all ${
@@ -244,6 +277,16 @@ export const HostDashboardPage = () => {
             }`}
           >
             Bookings
+          </button>
+          <button
+            onClick={() => setActiveTab('payments')}
+            className={`px-6 py-3 font-semibold transition-all ${
+              activeTab === 'payments'
+                ? 'text-blue-400 border-b-2 border-blue-400'
+                : 'text-gray-300 hover:text-white'
+            }`}
+          >
+            Payments
           </button>
         </div>
 
@@ -585,6 +628,95 @@ export const HostDashboardPage = () => {
                   )}
                 </tbody>
               </table>
+            )}
+          </div>
+        )}
+
+        {/* Payments Tab */}
+        {activeTab === 'payments' && (
+          <div className="space-y-8">
+            {/* Payment Summary Cards */}
+            {paymentSummary && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6">
+                  <p className="text-green-100 text-sm font-semibold mb-2">Total Earnings</p>
+                  <p className="text-3xl font-bold text-white">K{paymentSummary.totalEarnings}</p>
+                </div>
+                <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg p-6">
+                  <p className="text-yellow-100 text-sm font-semibold mb-2">Pending Amount</p>
+                  <p className="text-3xl font-bold text-white">K{paymentSummary.pendingAmount}</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6">
+                  <p className="text-blue-100 text-sm font-semibold mb-2">Paid Bookings</p>
+                  <p className="text-3xl font-bold text-white">{paymentSummary.paidBookingsCount}</p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-6">
+                  <p className="text-purple-100 text-sm font-semibold mb-2">Total Bookings</p>
+                  <p className="text-3xl font-bold text-white">{paymentSummary.totalBookings}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Payment History Table */}
+            {loading ? (
+              <div className="text-center text-gray-300">Loading payment history...</div>
+            ) : paymentHistory.length === 0 ? (
+              <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl border border-white border-opacity-20 p-8 text-center text-gray-300">
+                No payments recorded yet
+              </div>
+            ) : (
+              <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl border border-white border-opacity-20 overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white border-opacity-10 bg-black bg-opacity-20">
+                      <th className="px-6 py-3 text-left text-white text-sm font-semibold">Date</th>
+                      <th className="px-6 py-3 text-left text-white text-sm font-semibold">Check-in</th>
+                      <th className="px-6 py-3 text-left text-white text-sm font-semibold">Check-out</th>
+                      <th className="px-6 py-3 text-left text-white text-sm font-semibold">Amount</th>
+                      <th className="px-6 py-3 text-left text-white text-sm font-semibold">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paymentHistory.map((payment) => (
+                      <tr key={payment.id} className="border-b border-white border-opacity-5 hover:bg-white hover:bg-opacity-5">
+                        <td className="px-6 py-4 text-gray-300 text-sm">
+                          {new Date(payment.paymentDate).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-gray-300 text-sm">{payment.checkInDate}</td>
+                        <td className="px-6 py-4 text-gray-300 text-sm">{payment.checkOutDate}</td>
+                        <td className="px-6 py-4 text-green-400 text-sm font-semibold">K{payment.amount}</td>
+                        <td className="px-6 py-4 text-gray-300 text-sm">{payment.notes || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Pending Payments to Record */}
+            {bookings.filter(b => b.status === 'confirmed' && b.paymentStatus !== 'paid').length > 0 && (
+              <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl border border-white border-opacity-20 p-6">
+                <h3 className="text-xl font-bold text-white mb-6">Record Cash Payments</h3>
+                <div className="space-y-3">
+                  {bookings
+                    .filter(b => b.status === 'confirmed' && b.paymentStatus !== 'paid')
+                    .map((booking) => (
+                      <div key={booking.id} className="flex items-center justify-between bg-black bg-opacity-20 p-4 rounded">
+                        <div className="flex-1">
+                          <p className="text-white font-semibold">K{booking.totalPrice}</p>
+                          <p className="text-gray-400 text-sm">{booking.checkInDate} to {booking.checkOutDate}</p>
+                          <p className="text-gray-500 text-xs">{booking.numberOfGuests} guests</p>
+                        </div>
+                        <button
+                          onClick={() => handleRecordPayment(booking.id)}
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold transition-all"
+                        >
+                          Record Payment
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </div>
             )}
           </div>
         )}

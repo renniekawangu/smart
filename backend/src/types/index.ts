@@ -65,6 +65,10 @@ export interface Booking {
   numberOfGuests: number;
   totalPrice: number;
   status: BookingStatus;
+  paymentMethod: 'cash' | 'card';
+  paymentStatus: 'pending' | 'paid' | 'refunded';
+  paymentDate?: Date;
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }

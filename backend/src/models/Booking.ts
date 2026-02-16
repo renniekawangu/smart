@@ -17,6 +17,18 @@ const bookingSchema = new Schema<BookingDocument>(
       enum: Object.values(BookingStatus),
       default: BookingStatus.PENDING,
     },
+    paymentMethod: {
+      type: String,
+      enum: ['cash', 'card'],
+      default: 'cash',
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'paid', 'refunded'],
+      default: 'pending',
+    },
+    paymentDate: { type: Date, default: null },
+    notes: { type: String, default: '' },
   },
   {
     timestamps: true,
