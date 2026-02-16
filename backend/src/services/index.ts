@@ -152,6 +152,11 @@ export const bookingService = {
     const bookings = await BookingModel.find({ hostId });
     return bookings.map(b => b.toObject({ virtuals: true })) as Booking[];
   },
+
+  getBookingsByLodging: async (lodgingId: string): Promise<Booking[]> => {
+    const bookings = await BookingModel.find({ lodgingId });
+    return bookings.map(b => b.toObject({ virtuals: true })) as Booking[];
+  },
 };
 
 // Review Service

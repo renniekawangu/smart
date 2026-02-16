@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { hostService } from '../services/dashboardService';
 import { paymentService } from '../services/paymentService';
+import { CalendarComponent } from '../components/CalendarComponent';
 
 interface Lodging {
   id: string;
@@ -43,7 +44,8 @@ interface Stats {
 export const HostDashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'lodgings' | 'bookings' | 'payments'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'lodgings' | 'bookings' | 'payments' | 'calendar'>('overview');
+  const [selectedLodgingForCalendar, setSelectedLodgingForCalendar] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [paymentSummary, setPaymentSummary] = useState<any | null>(null);
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
@@ -293,6 +295,16 @@ export const HostDashboardPage = () => {
             }`}
           >
             Payments
+          </button>
+          <button
+            onClick={() => setActiveTab('calendar')}
+            className={`px-6 py-3 font-semibold transition-all ${
+              activeTab === 'calendar'
+                ? 'text-blue-400 border-b-2 border-blue-400'
+                : 'text-gray-300 hover:text-white'
+            }`}
+          >
+            Calendar
           </button>
         </div>
 
@@ -724,6 +736,41 @@ export const HostDashboardPage = () => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Calendar Tab */}
+        {activeTab === 'calendar' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-4">Availability Calendar</h2>
+              <p className="text-gray-300 text-sm mb-6">Select a lodging to view its calendar and block dates as needed</p>
+              
+              {/* Lodging selector */}
+              <div className="mb-6">
+                <label className="text-white mb-2 block text-sm">Select Lodging:</label>
+                <select
+                  value={selectedLodgingForCalendar || ''}
+                  onChange={(e) => setSelectedLodgingForCalendar(e.target.value)}
+                  className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-400"
+                >
+                  <option value="">-- Choose a lodging --</option>
+                  {lodgings.map(l => (
+                    <option key={l.id} value={l.id}>{l.title || l.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Calendar */}
+              {selectedLodgingForCalendar && (
+                <CalendarComponent
+                  lodgingId={selectedLodgingForCalendar}
+                  onBlockDates={() => {
+                    fetchLodgings();
+                  }}
+                />
+              )}
+            </div>
           </div>
         )}
         </div>
