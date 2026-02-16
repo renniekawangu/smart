@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { bookingService, userService, lodgingService } from '../services/index';
 import { successResponse, errorResponse } from '../utils/response';
 import { emailService } from '../utils/email';
+import { seasonalPricingService } from '../services/seasonalPricingService';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { BookingStatus } from '../types/index';
 
@@ -31,7 +32,14 @@ export const bookingController = {
       const checkIn = new Date(checkInDate);
       const checkOut = new Date(checkOutDate);
       const nights = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24);
-      const totalPrice = 100 * nights; // Placeholder calculation
+      
+      // Calculate total price with seasonal pricing
+      const { totalPrice } = await seasonalPricingService.calculateTotalPrice(
+        lodgingId,
+        checkInDate,
+        checkOutDate,
+        lodging.price || 100
+      );
 
       const booking = await bookingService.createBooking({
         userId: req.userId || '',

@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { availabilityService } from '../services/availabilityService';
 import { lodgingService } from '../services/index';
 import { successResponse, errorResponse } from '../utils/response';
@@ -95,7 +95,7 @@ export const availabilityController = {
   },
 
   // Check availability
-  checkAvailability: async (req: Response): Promise<void> => {
+  checkAvailability: async (req: Request, res: Response): Promise<void> => {
     try {
       const { lodgingId, startDate, endDate } = req.query;
 

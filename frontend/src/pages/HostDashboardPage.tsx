@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { hostService } from '../services/dashboardService';
 import { paymentService } from '../services/paymentService';
 import { CalendarComponent } from '../components/CalendarComponent';
+import { PricingPanel } from '../components/PricingPanel';
 
 interface Lodging {
   id: string;
@@ -44,8 +45,9 @@ interface Stats {
 export const HostDashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'lodgings' | 'bookings' | 'payments' | 'calendar'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'lodgings' | 'bookings' | 'payments' | 'calendar' | 'pricing'>('overview');
   const [selectedLodgingForCalendar, setSelectedLodgingForCalendar] = useState<string | null>(null);
+  const [selectedLodgingForPricing, setSelectedLodgingForPricing] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [paymentSummary, setPaymentSummary] = useState<any | null>(null);
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
@@ -305,6 +307,16 @@ export const HostDashboardPage = () => {
             }`}
           >
             Calendar
+          </button>
+          <button
+            onClick={() => setActiveTab('pricing')}
+            className={`px-6 py-3 font-semibold transition-all ${
+              activeTab === 'pricing'
+                ? 'text-blue-400 border-b-2 border-blue-400'
+                : 'text-gray-300 hover:text-white'
+            }`}
+          >
+            Pricing
           </button>
         </div>
 
@@ -769,6 +781,41 @@ export const HostDashboardPage = () => {
                     fetchLodgings();
                   }}
                 />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Pricing Tab */}
+        {activeTab === 'pricing' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-4">Seasonal Pricing</h2>
+              <p className="text-gray-300 text-sm mb-6">Manage seasonal pricing for your lodgings</p>
+              
+              {/* Lodging selector */}
+              <div className="mb-6">
+                <label className="text-white mb-2 block text-sm">Select Lodging:</label>
+                <select
+                  value={selectedLodgingForPricing || ''}
+                  onChange={(e) => setSelectedLodgingForPricing(e.target.value)}
+                  className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-400"
+                >
+                  <option value="">-- Choose a lodging --</option>
+                  {lodgings.map(l => (
+                    <option key={l.id} value={l.id}>{l.title || l.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Pricing Panel */}
+              {selectedLodgingForPricing && (
+                <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-white border-opacity-20">
+                  <PricingPanel
+                    lodgingId={selectedLodgingForPricing}
+                    basePrice={lodgings.find(l => l.id === selectedLodgingForPricing)?.price || 100}
+                  />
+                </div>
               )}
             </div>
           </div>
